@@ -84,6 +84,8 @@ pip install -e .
 ```bash
 # Scan a single host (top common ports)
 netrecon --target 192.168.1.1
+#Or
+python -m netrecon.cli --target 192.168.1.1
 
 # Scan a network range
 netrecon --target 192.168.1.0/24
