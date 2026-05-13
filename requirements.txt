@@ -1,2 +1,0 @@
-# NetRecon has no third-party runtime dependencies (stdlib only)
-# Install dev dependencies with: pip install -r requirements-dev.txt
