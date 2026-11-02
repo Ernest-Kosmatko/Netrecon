@@ -9,6 +9,8 @@ A network reconnaissance and passive vulnerability scanner. It finds live hosts,
 
 > Use only on networks and systems you own or have written permission to test.
 
+![Demo](docs/images/demo.svg)
+
 ## Features
 
 - TCP-based host discovery across CIDR ranges, no ICMP required
