@@ -1,39 +1,54 @@
-# ⬡ NetRecon
+# NetRecon
 
-> **Network Reconnaissance & Vulnerability Scanner**  
-> A lightweight, fast Python tool for authorized network reconnaissance and passive vulnerability detection.
+![Python](https://img.shields.io/badge/python-3.10%2B-3776AB?logo=python&logoColor=white)
+![License](https://img.shields.io/badge/license-MIT-green)
+![CI](https://github.com/Ernest-Kosmatko/NetRecon/actions/workflows/ci.yml/badge.svg)
+![Dependencies](https://img.shields.io/badge/dependencies-none-lightgrey)
 
-[![CI](https://github.com/Ernest-Kosmatko/NetRecon/actions/workflows/ci.yml/badge.svg)](https://github.com/Ernest-Kosmatko/NetRecon/actions)
-[![Python](https://img.shields.io/badge/python-3.10%2B-blue)](https://python.org)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
-[![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
+A network reconnaissance and passive vulnerability scanner. It finds live hosts, scans ports, grabs banners, matches them against known vulnerability signatures and writes JSON, CSV and HTML reports. Standard library only.
 
----
+> Use only on networks and systems you own or have written permission to test.
 
-## 🔍 What is NetRecon?
+## Features
 
-NetRecon is a Python-based offensive security tool for **authorized** network reconnaissance. It combines:
+- TCP-based host discovery across CIDR ranges, no ICMP required
+- Multithreaded TCP connect port scanner with configurable port ranges
+- Banner grabbing for service fingerprinting
+- Passive CVE matching against a list of signatures
+- JSON, CSV and styled HTML reports
 
-- **Host Discovery** — TCP-based host discovery across CIDR ranges (no ICMP required)
-- **Port Scanning** — Multi-threaded TCP connect scanner with configurable port ranges
-- **Banner Grabbing** — Service fingerprinting via response banners
-- **Vulnerability Detection** — Passive CVE matching against known signatures
-- **Reporting** — Exports results as JSON, CSV, and styled HTML
+## Install
 
-Built with zero external runtime dependencies (Python stdlib only).
+```bash
+git clone https://github.com/Ernest-Kosmatko/NetRecon.git
+cd NetRecon
+pip install -e .
+```
 
----
+## Usage
 
-## 📸 Sample Output
+```bash
+# single host, common ports
+netrecon --target 192.168.1.1
+
+# network range
+netrecon --target 192.168.1.0/24
+
+# custom ports
+netrecon --target 10.0.0.5 --ports 22,80,443,8080-8090
+
+# all ports, more threads, shorter timeout
+netrecon --target 10.0.0.1 --ports 1-65535 --threads 200 --timeout 0.5
+
+# skip banners, JSON report in a custom folder
+netrecon --target 10.0.0.1 --no-banners --output-dir ./results --format json
+```
+
+Also runnable without installing: `python -m netrecon.cli --target 192.168.1.1`
+
+Example output:
 
 ```
- _   _      _   ____
-| \ | | ___| |_|  _ \ ___  ___ ___  _ __
-|  \| |/ _ \ __| |_) / _ \/ __/ _ \| '_ \
-| |\  |  __/ |_|  _ <  __/ (_| (_) | | | |
-|_| \_|\___|\__|_| \_\___|\___\___/|_| |_|
-
-[*] Mode: Single host scan (192.168.1.10)
 [*] Scanning host: 192.168.1.10
   [+] 192.168.1.10:22 OPEN (SSH)
   [+] 192.168.1.10:80 OPEN (HTTP)
@@ -43,15 +58,9 @@ Built with zero external runtime dependencies (Python stdlib only).
   [!] CRITICAL | SMB Port Exposed (EternalBlue risk)
   [!] MEDIUM   | OpenSSH 7.x User Enumeration (port 22)
 
-───────────────────────────────────────────────────────
-  SCAN SUMMARY
-───────────────────────────────────────────────────────
   Hosts scanned   : 1
   Open ports      : 3
   Total findings  : 2
-    CRITICAL      : 1
-    MEDIUM        : 1
-───────────────────────────────────────────────────────
 
 [+] Reports saved:
     reports/scan_20240315_143022.json
@@ -59,66 +68,20 @@ Built with zero external runtime dependencies (Python stdlib only).
     reports/scan_20240315_143022.html
 ```
 
----
-
-## 🚀 Quick Start
-
-### Prerequisites
-
-- Python 3.10+
-- Target host(s) **you own or have explicit written permission to scan**
-
-### Installation
-
-```bash
-# Clone the repository
-git clone https://github.com/Ernest-Kosmatko/NetRecon.git
-cd NetRecon
-
-# Install (creates the `netrecon` CLI command)
-pip install -e .
-```
-
-### Usage
-
-```bash
-# Scan a single host (top common ports)
-netrecon --target 192.168.1.1
-#Or
-python -m netrecon.cli --target 192.168.1.1
-
-# Scan a network range
-netrecon --target 192.168.1.0/24
-
-# Custom port range
-netrecon --target 10.0.0.5 --ports 22,80,443,8080-8090
-
-# Full port scan with more threads
-netrecon --target 10.0.0.1 --ports 1-65535 --threads 200 --timeout 0.5
-
-# Skip banners for faster scan
-netrecon --target 10.0.0.1 --no-banners
-
-# Save to custom directory, JSON only
-netrecon --target 10.0.0.1 --output-dir ./results --format json
-```
-
-### All Options
+## Options
 
 | Flag | Default | Description |
-|------|---------|-------------|
-| `--target` | — | IP, hostname, or CIDR (required) |
-| `--ports` | top 17 | Port spec: `22,80` or `1-1024` |
-| `--threads` | `100` | Max concurrent threads |
-| `--timeout` | `1.0` | TCP timeout (seconds) |
+|---|---|---|
+| `--target` | none | IP, hostname or CIDR (required) |
+| `--ports` | top 17 | `22,80` or `1-1024` |
+| `--threads` | `100` | Maximum concurrent threads |
+| `--timeout` | `1.0` | TCP timeout in seconds |
 | `--no-banners` | off | Skip banner grabbing |
 | `--no-vulns` | off | Skip vulnerability checks |
-| `--output-dir` | `reports/` | Report output directory |
-| `--format` | `all` | `json` / `csv` / `html` / `all` |
+| `--output-dir` | `reports/` | Where reports are written |
+| `--format` | `all` | `json`, `csv`, `html` or `all` |
 
----
-
-## 🧠 Use as a Library
+## Use as a library
 
 ```python
 from netrecon import NetRecon, VulnerabilityChecker
@@ -127,99 +90,60 @@ from netrecon.reporter import save_html
 scanner = NetRecon(timeout=1.0, max_threads=100, grab_banners=True)
 checker = VulnerabilityChecker()
 
-# Scan a single host
 host = scanner.scan_host("192.168.1.10")
-
-# Check vulnerabilities
 vulns = checker.check_host(host)
-vulns_map = {host.ip: vulns}
 
-# Save HTML report
-report_path = save_html([host], vulns_map, output_dir="./reports")
-print(f"Report: {report_path}")
+save_html([host], {host.ip: vulns}, output_dir="./reports")
 
-# Access results programmatically
 for port in host.open_ports:
-    print(f"{port.port}/{port.service} — {port.banner}")
-
-for vuln in vulns:
-    print(f"[{vuln.severity}] {vuln.cve_id}: {vuln.title}")
+    print(f"{port.port}/{port.service} {port.banner}")
 ```
 
----
+## Vulnerability signatures
 
-## 🏗️ Project Structure
+| ID | Severity | Description |
+|---|---|---|
+| CVE-2017-0144 | Critical | EternalBlue, SMB port 445 exposed |
+| CVE-2019-0708 | Critical | BlueKeep, RDP port 3389 exposed |
+| CVE-2011-2523 | Critical | vsFTPd 2.3.4 backdoor |
+| CVE-2001-0361 | Critical | SSHv1 protocol enabled |
+| CVE-2017-7269 | Critical | IIS 6.0 WebDAV buffer overflow |
+| CVE-2018-15473 | High | OpenSSH 7.x user enumeration |
+| CVE-2017-7679 | High | Apache 2.2.x end of life |
+| N/A | High | Anonymous FTP login |
+| N/A | High | Telnet service running |
+| N/A | High | Redis or MongoDB exposed without authentication |
+
+New signatures go into `BANNER_SIGNATURES` or `INSECURE_PORT_RULES` in `netrecon/vuln_checks.py`.
+
+## Project structure
 
 ```
 NetRecon/
 ├── netrecon/
-│   ├── __init__.py       # Public API
-│   ├── scanner.py        # Host discovery + port scanning engine
-│   ├── vuln_checks.py    # CVE signature matching
-│   ├── reporter.py       # JSON / CSV / HTML report generation
-│   ├── cli.py            # CLI entry point
-│   └── utils.py          # Logger, port range parser
+│   ├── scanner.py       host discovery and port scanning
+│   ├── vuln_checks.py   signature matching
+│   ├── reporter.py      JSON, CSV and HTML reports
+│   ├── cli.py           command line entry point
+│   └── utils.py         logger, port range parser
 ├── tests/
-│   └── test_netrecon.py  # Unit tests (pytest)
-├── .github/
-│   └── workflows/
-│       └── ci.yml        # GitHub Actions CI (Python 3.10–3.12)
-├── reports/              # Generated reports (gitignored)
+├── .github/workflows/ci.yml
 ├── pyproject.toml
-├── requirements.txt
-├── requirements-dev.txt
 └── README.md
 ```
 
----
-
-## 🧪 Running Tests
+## Tests
 
 ```bash
 pip install -r requirements-dev.txt
 pytest tests/ -v --cov=netrecon
 ```
 
----
+## Limitations
 
-## 🔍 Vulnerability Signatures
+- Detection is passive and based on open ports and banners, so results are indicators, not confirmed vulnerabilities, and false positives are possible
+- Connect scanning is noisy and appears in target logs
 
-NetRecon includes passive detection for:
+## License
 
-| CVE / ID | Severity | Description |
-|----------|----------|-------------|
-| CVE-2017-0144 | 🔴 CRITICAL | EternalBlue — SMB port 445 exposure |
-| CVE-2019-0708 | 🔴 CRITICAL | BlueKeep — RDP port 3389 exposure |
-| CVE-2011-2523 | 🔴 CRITICAL | vsFTPd 2.3.4 backdoor |
-| CVE-2001-0361 | 🔴 CRITICAL | SSHv1 protocol enabled |
-| CVE-2018-15473 | 🟠 HIGH | OpenSSH 7.x user enumeration |
-| CVE-2017-7679 | 🟠 HIGH | Apache 2.2.x end-of-life |
-| CVE-2017-7269 | 🔴 CRITICAL | IIS 6.0 WebDAV buffer overflow |
-| N/A | 🟠 HIGH | Anonymous FTP login |
-| N/A | 🟠 HIGH | Telnet service running |
-| N/A | 🟠 HIGH | Redis / MongoDB exposed without auth |
-
-> Adding new signatures is easy — extend the `BANNER_SIGNATURES` or `INSECURE_PORT_RULES` lists in `netrecon/vuln_checks.py`.
-
----
-
-## ⚠️ Legal Disclaimer
-
-**This tool is for authorized security testing only.**  
-Scanning networks or systems without explicit written permission from the owner is illegal under the Computer Fraud and Abuse Act (CFAA), the UK Computer Misuse Act, and equivalent laws worldwide.  
-
-The author assumes no liability for misuse of this software.  
-**Always get written authorization before scanning any target.**
-
----
-
-## 📄 License
-
-[MIT](LICENSE) © Ernest Kosmatko
-
----
-
-## 👤 Author
-
-**Ernest Kosmatko**  
-GitHub: [@Ernest-Kosmatko](https://github.com/Ernest-Kosmatko)
+MIT
